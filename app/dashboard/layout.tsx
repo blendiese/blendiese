@@ -1,5 +1,4 @@
 import { LogoutButton } from "@/components/logout-button";
-import { Menu } from "lucide-react";
 import { MenuItems } from "@/components/menu-items";
 
 export default async function DashboardLayout({
