@@ -3,21 +3,36 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-
-console.log("Hello from Functions!")
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import fetchGithubArguments from "./queries/fetch-github-arguments.ts";
+import fetchGithubPullRequests from "./queries/fetch-github-pull-requests.ts";
 
 Deno.serve(async (req) => {
-  const { name } = await req.json()
-  const data = {
-    message: `Hello ${name}!`,
+  const { data: githubData, error: githubDataError } =
+    await fetchGithubArguments(
+      req,
+    );
+
+  if (!githubData || githubDataError) {
+    return new Response(
+      githubDataError?.message ?? "",
+      {
+        status: githubDataError?.status ?? 500,
+      },
+    );
   }
 
+  const response = await fetchGithubPullRequests(
+    githubData.users,
+    githubData.repositories,
+    githubData.token,
+  );
+
   return new Response(
-    JSON.stringify(data),
+    JSON.stringify(await response.json()),
     { headers: { "Content-Type": "application/json" } },
-  )
-})
+  );
+});
 
 /* To invoke locally:
 
