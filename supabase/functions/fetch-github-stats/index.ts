@@ -28,6 +28,15 @@ Deno.serve(async (req) => {
     githubData.token,
   );
 
+  if (!response.ok) {
+    return new Response(
+      "Check your github token",
+      {
+        status: 400,
+      },
+    );
+  }
+
   return new Response(
     JSON.stringify(await response.json()),
     { headers: { "Content-Type": "application/json" } },
