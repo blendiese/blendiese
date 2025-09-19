@@ -1,5 +1,5 @@
-import { PullRequestStat } from "../types/pull-request-stat.ts";
-import { PullRequest } from "../types/pull-request.ts";
+import { PullRequestStat } from "../../../../types/pull-request-stat.ts";
+import { PullRequest } from "../../../../types/pull-request.ts";
 
 export const calculateStatsForPullRequest = (pullRequest: PullRequest) => {
   const mergedAt = new Date(pullRequest.mergedAt).getTime();

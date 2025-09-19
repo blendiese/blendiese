@@ -126,7 +126,7 @@ export default function DashboardPage() {
                   },
                   title: {
                     display: true,
-                    text: "Number of commits changed",
+                    text: "Number of commits made",
                   },
                 },
               }}
@@ -148,7 +148,7 @@ export default function DashboardPage() {
                   },
                   title: {
                     display: true,
-                    text: "Linees of code changed",
+                    text: "Lines of code changed",
                   },
                 },
               }}

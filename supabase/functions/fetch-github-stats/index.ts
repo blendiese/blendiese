@@ -6,9 +6,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import fetchGithubArguments from "./queries/fetch-github-arguments.ts";
 import fetchGithubPullRequests from "./queries/fetch-github-pull-requests.ts";
-import { PullRequestStat } from "./types/pull-request-stat.ts";
+import { PullRequestStat } from "../../../types/pull-request-stat.ts";
 import { calculateStatsForPullRequest } from "./stats/calculator.ts";
-import { PullRequest } from "./types/pull-request.ts";
+import { PullRequest } from "../../../types/pull-request.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {

@@ -1,8 +1,9 @@
+import { PullRequestStatDateKeyed } from "@/types/pull-request-stat-date-keyed";
 import { ChartData } from "chart.js";
 
 export default (
-    githubStats: any[],
-    metricName: string,
+    githubStats: PullRequestStatDateKeyed,
+    metricName: keyof PullRequestStatDateKeyed[number][string],
     scale: number = 1,
 ) => {
     const d = githubStats.reduce<
