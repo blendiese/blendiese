@@ -1,17 +1,20 @@
-export default async (
+import { PullRequest } from "../types/pull-request.ts";
+
+const fetchPullRequestByPage = async (
   githubUsers: string[],
   githubRepositories: string[],
   githubToken: string,
+  cursor: string | null,
 ) => {
   const graphqlEndpoint = "https://api.github.com/graphql";
   const query = `
-    query GetPullRequestsByAuthor($query: String!, $first: Int = 100) {
+    query GetPullRequestsByAuthor($query: String!, $first: Int = 100, $after: String = null) {
       search(
         query: $query
         type: ISSUE
-        first: $first
+        first: $first,
+        after: $after
       ) {
-        issueCount
         nodes {
             ... on PullRequest {
                 id
@@ -57,8 +60,9 @@ export default async (
   const variables = {
     query: `repo:${githubRepositories.join("+")} is:pr author:${
       githubUsers.join("+")
-    }`,
-    first: 50,
+    } is:merged base:main`,
+    first: 100,
+    after: cursor,
   };
 
   return await fetch(graphqlEndpoint, {
@@ -70,4 +74,32 @@ export default async (
     },
     body: JSON.stringify({ query, variables }),
   });
+};
+
+export default async (
+  githubUsers: string[],
+  githubRepositories: string[],
+  githubToken: string,
+) => {
+  let cursor: string | null = null;
+  let hasNextPage = true;
+  const pullRequests: PullRequest[] = [];
+
+  while (hasNextPage) {
+    const response = await fetchPullRequestByPage(
+      githubUsers,
+      githubRepositories,
+      githubToken,
+      cursor,
+    );
+
+    const content = await response.json();
+
+    pullRequests.push(...content.data.search.nodes);
+
+    hasNextPage = content.data.search.pageInfo.hasNextPage;
+    cursor = content.data.search.pageInfo.endCursor;
+  }
+
+  return pullRequests;
 };
