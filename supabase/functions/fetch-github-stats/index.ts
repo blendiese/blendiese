@@ -6,6 +6,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import fetchGithubArguments from "./queries/fetch-github-arguments.ts";
 import fetchGithubPullRequests from "./queries/fetch-github-pull-requests.ts";
+import { PullRequestStat } from "./types/pull-request-stat.ts";
+import { calculateStatsForPullRequest } from "./stats/calculator.ts";
+import { PullRequest } from "./types/pull-request.ts";
 
 Deno.serve(async (req) => {
   const { data: githubData, error: githubDataError } =
@@ -22,23 +25,66 @@ Deno.serve(async (req) => {
     );
   }
 
-  const response = await fetchGithubPullRequests(
+  const pullRequests = await fetchGithubPullRequests(
     githubData.users,
     githubData.repositories,
     githubData.token,
   );
 
-  if (!response.ok) {
-    return new Response(
-      "Check your github token",
-      {
-        status: 400,
-      },
-    );
-  }
+  const prGrouping = pullRequests.reduce<Record<string, PullRequest[]>>(
+    (data, pr) => {
+      const date = new Date(pr.createdAt).toLocaleDateString("en-CA");
+
+      if (!data[date]) {
+        data[date] = [pr];
+      } else {
+        data[date].push(pr);
+      }
+
+      return data;
+    },
+    {},
+  );
+
+  const aggregatedPullRequestStats = Object.keys(prGrouping).map((dateKey) => {
+    return {
+      [dateKey]: prGrouping[dateKey].reduce<PullRequestStat>(
+        (stat, pr, currentIndex) => {
+          const currentCount = currentIndex + 1;
+          const currentPRStat = calculateStatsForPullRequest(pr);
+
+          return {
+            mergeTime:
+              ((stat.mergeTime * currentCount + currentPRStat.mergeTime) /
+                (currentCount + 1)),
+            reviewTime:
+              (stat.reviewTime * currentCount + currentPRStat.reviewTime) /
+              (currentCount + 1),
+            numberOfFileChanges: (stat.numberOfFileChanges * currentCount +
+              currentPRStat.numberOfFileChanges) /
+              (currentCount + 1),
+            numberOfCommits: (stat.numberOfCommits * currentCount +
+              currentPRStat.numberOfCommits) /
+              (currentCount + 1),
+            changedLinesOfCodeCount:
+              (stat.changedLinesOfCodeCount * currentCount +
+                currentPRStat.changedLinesOfCodeCount) /
+              (currentCount + 1),
+          };
+        },
+        {
+          mergeTime: 0,
+          reviewTime: 0,
+          numberOfFileChanges: 0,
+          numberOfCommits: 0,
+          changedLinesOfCodeCount: 0,
+        },
+      ),
+    };
+  });
 
   return new Response(
-    JSON.stringify(await response.json()),
+    JSON.stringify(aggregatedPullRequestStats),
     { headers: { "Content-Type": "application/json" } },
   );
 });
