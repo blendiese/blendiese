@@ -1,15 +1,15 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+"use client";
 import { InfoIcon } from "lucide-react";
-import { FetchDataSteps } from "@/components/tutorial/fetch-data-steps";
+import { Line } from "react-chartjs-2";
+import getChartData from "@/services/get-chart-data";
+import { useGetGithubStats } from "@/hooks/useGetGithubStats";
+import Chart from "chart.js/auto";
+import { CategoryScale } from "chart.js";
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
+Chart.register(CategoryScale);
 
-  const { data, error } = await supabase.auth.getClaims();
-  if (error || !data?.claims) {
-    redirect("/auth/login");
-  }
+export default function DashboardPage() {
+  const { data: githubStats, loading: githubDataLoading } = useGetGithubStats();
 
   return (
     <div className="flex-1 w-full flex flex-col gap-12 ml-8">
@@ -20,16 +20,144 @@ export default async function DashboardPage() {
           user
         </div>
       </div>
-      <div className="flex flex-col gap-2 items-start">
-        <h2 className="font-bold text-2xl mb-4">Your user details</h2>
-        <pre className="text-xs font-mono p-3 rounded border max-h-32 overflow-auto">
-          {JSON.stringify(data.claims, null, 2)}
-        </pre>
-      </div>
-      <div>
-        <h2 className="font-bold text-2xl mb-4">Next steps</h2>
-        <FetchDataSteps />
-      </div>
+      {githubStats && !githubDataLoading ? (
+        <div className="grid grid-cols-3 gap-4">
+          <div className="w-full">
+            <Line
+              data={getChartData(githubStats, "mergeTime", 100)}
+              options={{
+                responsive: true,
+                scales: {
+                  y: {
+                    min: 0,
+                  },
+                },
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                  title: {
+                    display: true,
+                    text: "Time to merge since first commits (seconds)",
+                  },
+                },
+              }}
+            />
+          </div>
+          <div className="w-full">
+            <Line
+              data={getChartData(githubStats, "reviewTime", 100)}
+              options={{
+                responsive: true,
+                scales: {
+                  y: {
+                    min: 0,
+                  },
+                },
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                  title: {
+                    display: true,
+                    text: "Time to review since first commits (seconds)",
+                  },
+                },
+              }}
+            />
+          </div>
+          <div className="w-full">
+            <Line
+              data={getChartData(githubStats, "deployTime", 100)}
+              options={{
+                responsive: true,
+                scales: {
+                  y: {
+                    min: 0,
+                  },
+                },
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                  title: {
+                    display: true,
+                    text: "Time to deploy since merged (seconds)",
+                  },
+                },
+              }}
+            />
+          </div>
+          <div className="w-full">
+            <Line
+              data={getChartData(githubStats, "numberOfFileChanges")}
+              options={{
+                responsive: true,
+                scales: {
+                  y: {
+                    min: 0,
+                  },
+                },
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                  title: {
+                    display: true,
+                    text: "Number of files changes",
+                  },
+                },
+              }}
+            />
+          </div>
+          <div className="w-full">
+            <Line
+              data={getChartData(githubStats, "numberOfCommits")}
+              options={{
+                responsive: true,
+                scales: {
+                  y: {
+                    min: 0,
+                  },
+                },
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                  title: {
+                    display: true,
+                    text: "Number of commits changed",
+                  },
+                },
+              }}
+            />
+          </div>
+          <div className="w-full">
+            <Line
+              data={getChartData(githubStats, "changedLinesOfCodeCount")}
+              options={{
+                responsive: true,
+                scales: {
+                  y: {
+                    min: 0,
+                  },
+                },
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                  title: {
+                    display: true,
+                    text: "Linees of code changed",
+                  },
+                },
+              }}
+            />
+          </div>
+        </div>
+      ) : (
+        <span>Error loading stats data</span>
+      )}
     </div>
   );
 }
