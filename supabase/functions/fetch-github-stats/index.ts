@@ -9,8 +9,14 @@ import fetchGithubPullRequests from "./queries/fetch-github-pull-requests.ts";
 import { PullRequestStat } from "./types/pull-request-stat.ts";
 import { calculateStatsForPullRequest } from "./stats/calculator.ts";
 import { PullRequest } from "./types/pull-request.ts";
+import { corsHeaders } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
+  // This is needed if you're planning to invoke your function from a browser.
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   const { data: githubData, error: githubDataError } =
     await fetchGithubArguments(
       req,
@@ -50,7 +56,7 @@ Deno.serve(async (req) => {
     return {
       [dateKey]: prGrouping[dateKey].reduce<PullRequestStat>(
         (stat, pr, currentIndex) => {
-          const currentCount = currentIndex + 1;
+          const currentCount = currentIndex;
           const currentPRStat = calculateStatsForPullRequest(pr);
 
           return {
@@ -70,6 +76,9 @@ Deno.serve(async (req) => {
               (stat.changedLinesOfCodeCount * currentCount +
                 currentPRStat.changedLinesOfCodeCount) /
               (currentCount + 1),
+            deployTime:
+              ((stat.deployTime * currentCount + currentPRStat.deployTime) /
+                (currentCount + 1)),
           };
         },
         {
@@ -78,14 +87,15 @@ Deno.serve(async (req) => {
           numberOfFileChanges: 0,
           numberOfCommits: 0,
           changedLinesOfCodeCount: 0,
+          deployTime: 0,
         },
       ),
     };
-  });
+  }).sort((a, b) => Object.keys(a)[0].localeCompare(Object.keys(b)[0]));
 
   return new Response(
     JSON.stringify(aggregatedPullRequestStats),
-    { headers: { "Content-Type": "application/json" } },
+    { headers: { "Content-Type": "application/json", ...corsHeaders } },
   );
 });
 

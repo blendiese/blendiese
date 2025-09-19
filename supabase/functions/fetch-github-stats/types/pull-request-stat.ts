@@ -4,4 +4,5 @@ export type PullRequestStat = {
   numberOfFileChanges: number;
   numberOfCommits: number;
   changedLinesOfCodeCount: number;
+  deployTime: number;
 };

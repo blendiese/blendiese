@@ -1,6 +1,20 @@
 export type PullRequest = {
   createdAt: string;
   mergedAt: string;
+  mergeCommit: {
+    statusCheckRollup: {
+      state: string;
+      contexts: {
+        nodes: ({
+          __typename: "CheckRun";
+          completedAt: string;
+        } | {
+          __typename: "StatusContext";
+          createdAt: string;
+        })[];
+      };
+    };
+  };
   commits: {
     totalCount: number;
     nodes: {
