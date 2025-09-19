@@ -1,4 +1,4 @@
-import { PullRequest } from "../types/pull-request.ts";
+import { PullRequest } from "../../../../types/pull-request.ts";
 
 const fetchPullRequestByPage = async (
   githubUsers: string[],

@@ -1,3 +1,4 @@
+import AuthProtected from "@/components/auth-protected";
 import { LogoutButton } from "@/components/logout-button";
 import { MenuItems } from "@/components/menu-items";
 
@@ -16,7 +17,7 @@ export default async function DashboardLayout({
           </div>
         </nav>
         <div className="flex-1 flex flex-col gap-20 p-5 pl-36 pr-24 w-full">
-          {children}
+          <AuthProtected>{children}</AuthProtected>
         </div>
 
         <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
