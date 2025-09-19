@@ -9,7 +9,11 @@ import { CategoryScale } from "chart.js";
 Chart.register(CategoryScale);
 
 export default function DashboardPage() {
-  const { data: githubStats, loading: githubDataLoading } = useGetGithubStats();
+  const {
+    data: githubStats,
+    loading: githubDataLoading,
+    error: githubDataError,
+  } = useGetGithubStats();
 
   return (
     <div className="flex-1 w-full flex flex-col gap-12 ml-8">
@@ -20,7 +24,9 @@ export default function DashboardPage() {
           user
         </div>
       </div>
-      {githubStats && !githubDataLoading ? (
+      {githubDataLoading && <span>Loading...</span>}
+      {githubDataError && <span>Error loading data</span>}
+      {githubStats && (
         <div className="grid grid-cols-3 gap-4">
           <div className="w-full">
             <Line
@@ -155,8 +161,6 @@ export default function DashboardPage() {
             />
           </div>
         </div>
-      ) : (
-        <span>Error loading stats data</span>
       )}
     </div>
   );
