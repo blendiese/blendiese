@@ -17,15 +17,25 @@ const fetchPullRequestByPage = async (
       ) {
         nodes {
             ... on PullRequest {
-                id
-                title
-                url
-                state
-                author {
-                    login
-                }
                 createdAt
                 mergedAt
+                mergeCommit {
+                    statusCheckRollup {
+                        state
+                        contexts(first: 100) {
+                            nodes {
+                                ... on CheckRun {
+                                    __typename
+                                    completedAt
+                                }
+                                ... on StatusContext {
+                                    __typename
+                                    createdAt
+                                }
+                            }
+                        }
+                    }
+                }
                 reviews(first: 1) {
                     nodes {
                         ... on PullRequestReview {
@@ -38,7 +48,6 @@ const fetchPullRequestByPage = async (
                     totalCount
                     nodes {
                         commit {
-                            message
                             authoredDate
                         }
                     }
