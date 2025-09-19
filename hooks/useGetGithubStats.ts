@@ -8,10 +8,11 @@ const supabase = createClient();
 export const useGetGithubStats = () => {
     const [data, setData] = useState<PullRequestStatDateKeyed | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState();
 
     useEffect(() => {
         const getStatsData = async () => {
-            const { data: statsData } = await supabase.functions.invoke(
+            const { data: statsData, error } = await supabase.functions.invoke(
                 "fetch-github-stats",
                 {
                     body: { name: "Functions" },
@@ -19,10 +20,11 @@ export const useGetGithubStats = () => {
             );
             setData(statsData);
             setLoading(false);
+            setError(error);
         };
 
         getStatsData();
     }, []);
 
-    return { data, loading };
+    return { data, error, loading };
 };
