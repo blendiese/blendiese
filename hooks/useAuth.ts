@@ -3,9 +3,9 @@ import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Session } from "@supabase/supabase-js";
 
-export const useAuth = () => {
-    const supabase = createClient();
+const supabase = createClient();
 
+export const useAuth = () => {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
 
