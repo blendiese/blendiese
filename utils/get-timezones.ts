@@ -25,7 +25,7 @@ export default () => {
         offsetString: offsetString,
         offsetMinutes: offsetMinutes,
       };
-    } catch (e) {
+    } catch {
       // Handle cases where a timezone might not be valid or offset cannot be determined
       return null;
     }

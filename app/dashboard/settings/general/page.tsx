@@ -50,7 +50,7 @@ export default function GeneralSettingsPage() {
 
   return (
     <div className="flex flex-col ml-8 p-5 gap-4 w-full">
-      <h2 className="font-bold">User's preferred timezone</h2>
+      <h2 className="font-bold">User&apos;s preferred timezone</h2>
       {loading && <span>Loading...</span>}
       {!loading && (
         <Select.Root
