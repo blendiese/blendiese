@@ -29,10 +29,13 @@ Deno.serve(async (req) => {
     );
   }
 
+  const content = await req.json();
+
   const pullRequests = await fetchGithubPullRequests(
     githubData.users,
     githubData.repositories,
     githubData.token,
+    content.fromTime,
   );
 
   const aggregatedStats = aggregateStats(pullRequests);

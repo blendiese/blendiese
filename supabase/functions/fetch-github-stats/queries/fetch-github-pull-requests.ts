@@ -4,6 +4,7 @@ const fetchPullRequestByPage = async (
   githubUsers: string[],
   githubRepositories: string[],
   githubToken: string,
+  fromTime: string,
   cursor: string | null,
 ) => {
   const graphqlEndpoint = "https://api.github.com/graphql";
@@ -69,10 +70,12 @@ const fetchPullRequestByPage = async (
   const variables = {
     query: `repo:${githubRepositories.join("+")} is:pr author:${
       githubUsers.join("+")
-    } is:merged base:main`,
+    } is:merged base:main created:>${fromTime}`,
     first: 100,
     after: cursor,
   };
+
+  console.log(variables);
 
   return await fetch(graphqlEndpoint, {
     method: "POST",
@@ -89,6 +92,7 @@ export default async (
   githubUsers: string[],
   githubRepositories: string[],
   githubToken: string,
+  fromTime: string,
 ) => {
   let cursor: string | null = null;
   let hasNextPage = true;
@@ -99,6 +103,7 @@ export default async (
       githubUsers,
       githubRepositories,
       githubToken,
+      fromTime,
       cursor,
     );
 

@@ -1,19 +1,35 @@
 "use client";
 import { InfoIcon } from "lucide-react";
-import { Line } from "react-chartjs-2";
-import getChartData from "@/services/get-chart-data";
 import { useGetGithubStats } from "@/hooks/useGetGithubStats";
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
+import { MergeTime } from "@/components/charts/mergeTime";
+import { ChangedLinesOfCodeCount } from "@/components/charts/changedLinesOfCodeCount";
+import { ReviewTime } from "@/components/charts/reviewTime";
+import { DeployTime } from "@/components/charts/deployTime";
+import { NumberOfFileChanges } from "@/components/charts/numberOfFileChanges";
+import { NumberOfCommits } from "@/components/charts/numberOfCommits";
+import { DateSelect } from "@/components/filters/date-select";
+import { useState } from "react";
+import { convertParameter } from "@/utils/convert-parameter";
+import { Since } from "@/types/parameter";
 
 Chart.register(CategoryScale);
 
 export default function DashboardPage() {
+  const [fromTime, setFromTime] = useState<string>(
+    convertParameter({
+      timeSelect: {
+        mode: "relative",
+        since: "1 week",
+      },
+    })!
+  );
   const {
     data: githubStats,
     loading: githubDataLoading,
     error: githubDataError,
-  } = useGetGithubStats();
+  } = useGetGithubStats(fromTime);
 
   return (
     <div className="flex-1 w-full flex flex-col gap-12 ml-8">
@@ -26,140 +42,26 @@ export default function DashboardPage() {
       </div>
       {githubDataLoading && <span>Loading...</span>}
       {githubDataError && <span>Error loading data</span>}
+      <DateSelect
+        onChange={(relativeTime) =>
+          setFromTime(
+            convertParameter({
+              timeSelect: {
+                mode: "relative",
+                since: relativeTime as Since,
+              },
+            })!
+          )
+        }
+      />
       {githubStats && (
         <div className="grid grid-cols-3 gap-4">
-          <div className="w-full">
-            <Line
-              data={getChartData(githubStats, "mergeTime", 100)}
-              options={{
-                responsive: true,
-                scales: {
-                  y: {
-                    min: 0,
-                  },
-                },
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                  title: {
-                    display: true,
-                    text: "Time to merge since first commits (seconds)",
-                  },
-                },
-              }}
-            />
-          </div>
-          <div className="w-full">
-            <Line
-              data={getChartData(githubStats, "reviewTime", 100)}
-              options={{
-                responsive: true,
-                scales: {
-                  y: {
-                    min: 0,
-                  },
-                },
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                  title: {
-                    display: true,
-                    text: "Time to review since first commits (seconds)",
-                  },
-                },
-              }}
-            />
-          </div>
-          <div className="w-full">
-            <Line
-              data={getChartData(githubStats, "deployTime", 100)}
-              options={{
-                responsive: true,
-                scales: {
-                  y: {
-                    min: 0,
-                  },
-                },
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                  title: {
-                    display: true,
-                    text: "Time to deploy since merged (seconds)",
-                  },
-                },
-              }}
-            />
-          </div>
-          <div className="w-full">
-            <Line
-              data={getChartData(githubStats, "numberOfFileChanges")}
-              options={{
-                responsive: true,
-                scales: {
-                  y: {
-                    min: 0,
-                  },
-                },
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                  title: {
-                    display: true,
-                    text: "Number of files changes",
-                  },
-                },
-              }}
-            />
-          </div>
-          <div className="w-full">
-            <Line
-              data={getChartData(githubStats, "numberOfCommits")}
-              options={{
-                responsive: true,
-                scales: {
-                  y: {
-                    min: 0,
-                  },
-                },
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                  title: {
-                    display: true,
-                    text: "Number of commits made",
-                  },
-                },
-              }}
-            />
-          </div>
-          <div className="w-full">
-            <Line
-              data={getChartData(githubStats, "changedLinesOfCodeCount")}
-              options={{
-                responsive: true,
-                scales: {
-                  y: {
-                    min: 0,
-                  },
-                },
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                  title: {
-                    display: true,
-                    text: "Lines of code changed",
-                  },
-                },
-              }}
-            />
-          </div>
+          <MergeTime githubStats={githubStats} />
+          <ReviewTime githubStats={githubStats} />
+          <DeployTime githubStats={githubStats} />
+          <NumberOfFileChanges githubStats={githubStats} />
+          <NumberOfCommits githubStats={githubStats} />
+          <ChangedLinesOfCodeCount githubStats={githubStats} />
         </div>
       )}
     </div>
