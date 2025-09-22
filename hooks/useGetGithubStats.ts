@@ -5,7 +5,7 @@ import { PullRequestStatDateKeyed } from "@/types/pull-request-stat-date-keyed";
 
 const supabase = createClient();
 
-export const useGetGithubStats = () => {
+export const useGetGithubStats = (fromTime: string) => {
     const [data, setData] = useState<PullRequestStatDateKeyed | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
@@ -15,7 +15,9 @@ export const useGetGithubStats = () => {
             const { data: statsData, error } = await supabase.functions.invoke(
                 "fetch-github-stats",
                 {
-                    body: { name: "Functions" },
+                    body: {
+                        fromTime,
+                    },
                 },
             );
             setData(statsData);
@@ -24,7 +26,7 @@ export const useGetGithubStats = () => {
         };
 
         getStatsData();
-    }, []);
+    }, [fromTime]);
 
     return { data, error, loading };
 };
